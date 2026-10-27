@@ -96,7 +96,7 @@ export default function Navbar() {
       <header className="sticky top-0 z-[100] border-b border-line bg-[var(--nav-bg)] backdrop-blur-lg">
         <nav className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-3.5 sm:px-6 sm:py-[18px]">
           <Link href="/" aria-label="Nova AI home" className="flex items-center gap-0 font-display text-[19px] font-semibold tracking-tight sm:gap-2.5">
-            <BrandMark size={26} />
+            <BrandMark size={34} />
             <span className="hidden sm:inline">Nova AI</span>
           </Link>
 

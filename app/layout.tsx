@@ -28,6 +28,12 @@ export const metadata: Metadata = {
   title: "Nova AI — Intelligence, distilled",
   description:
     "Nova AI turns scattered context into a single model of your work, so every answer already knows what came before.",
+
+  // Website favicon and Apple touch icon
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -49,3 +55,4 @@ export default function RootLayout({
     </html>
   );
 }
+
