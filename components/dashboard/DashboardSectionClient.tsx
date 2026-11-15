@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import {
-  Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer,
-  Tooltip, XAxis, YAxis,
+  Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart,
+  Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 import {
   BarChart3, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, MessageSquare,
-  Search, Settings as SettingsIcon, ShieldCheck, UserRound, Users, X,
+  RefreshCw, Search, Settings as SettingsIcon, ShieldCheck, UserRound, Users, X,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -37,6 +37,7 @@ type Overview = {
   recentUsers: AdminUser[];
 };
 type AnalyticsPoint = { date: string; users: number; conversations: number; messages: number };
+type DistributionPoint = { name: string; users: number };
 type UsersResult = { users: AdminUser[]; page: number; pages: number; total: number };
 type TopicReport = { topic: string; conversations: number };
 
@@ -54,6 +55,8 @@ const userNavigation = [
   { id: "chat", label: "Chat", href: "/dashboard", icon: MessageSquare },
   { id: "profile", label: "Profile", href: "/dashboard/profile", icon: UserRound },
 ];
+
+const analyticsColors = ["#8b5cf6", "#22c55e", "#f59e0b", "#38bdf8", "#ec4899"];
 
 const titles: Record<Section, string> = {
   overview: "Overview",
@@ -128,6 +131,12 @@ export default function DashboardSectionClient({
   const [profile, setProfile] = useState<Profile | null>(initialUser);
   const [overview, setOverview] = useState<Overview | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsPoint[]>([]);
+  const [roleDistribution, setRoleDistribution] = useState<DistributionPoint[]>([]);
+  const [planDistribution, setPlanDistribution] = useState<DistributionPoint[]>([]);
+  const [analyticsTotalUsers, setAnalyticsTotalUsers] = useState(0);
+  const [analyticsActiveUsers, setAnalyticsActiveUsers] = useState(0);
+  const [analyticsDays, setAnalyticsDays] = useState(30);
+  const [analyticsRefreshKey, setAnalyticsRefreshKey] = useState(0);
   const [usersData, setUsersData] = useState<UsersResult | null>(null);
   const [topics, setTopics] = useState<TopicReport[]>([]);
   const [totalConversations, setTotalConversations] = useState(0);
@@ -171,10 +180,16 @@ export default function DashboardSectionClient({
           if (!response.ok) throw new Error(result.error || "Unable to load users.");
           if (active) setUsersData(result);
         } else if (section === "analytics") {
-          const response = await fetch("/api/admin/analytics");
+          const response = await fetch(`/api/admin/analytics?days=${analyticsDays}`, { cache: "no-store" });
           const result = await response.json();
           if (!response.ok) throw new Error(result.error || "Unable to load analytics.");
-          if (active) setAnalytics(result.days);
+          if (active) {
+            setAnalytics(result.days);
+            setRoleDistribution(result.roleDistribution);
+            setPlanDistribution(result.planDistribution);
+            setAnalyticsTotalUsers(result.totalUsers);
+            setAnalyticsActiveUsers(result.activeUsers);
+          }
         } else if (section === "reports") {
           const response = await fetch("/api/admin/reports");
           const result = await response.json();
@@ -207,7 +222,7 @@ export default function DashboardSectionClient({
     }
     void load();
     return () => { active = false; };
-  }, [page, search, section]);
+  }, [analyticsDays, analyticsRefreshKey, page, search, section]);
 
   function openProfileEditor() {
     if (!profile) return;
@@ -343,7 +358,18 @@ export default function DashboardSectionClient({
             {!loading && !error && section === "overview" && overview && (
               <OverviewView overview={overview} analytics={analytics} />
             )}
-            {!loading && !error && section === "analytics" && <AnalyticsView analytics={analytics} />}
+            {!loading && !error && section === "analytics" && (
+              <AnalyticsView
+                analytics={analytics}
+                roleDistribution={roleDistribution}
+                planDistribution={planDistribution}
+                totalUsers={analyticsTotalUsers}
+                activeUsers={analyticsActiveUsers}
+                days={analyticsDays}
+                onDaysChange={setAnalyticsDays}
+                onRefresh={() => setAnalyticsRefreshKey((current) => current + 1)}
+              />
+            )}
             {!loading && !error && section === "users" && usersData && (
               <UsersView
                 result={usersData}
@@ -463,36 +489,198 @@ function OverviewView({ overview, analytics }: { overview: Overview; analytics: 
   );
 }
 
-function AnalyticsView({ analytics }: { analytics: AnalyticsPoint[] }) {
+function AnalyticsView({
+  analytics,
+  roleDistribution,
+  planDistribution,
+  totalUsers,
+  activeUsers,
+  days,
+  onDaysChange,
+  onRefresh,
+}: {
+  analytics: AnalyticsPoint[];
+  roleDistribution: DistributionPoint[];
+  planDistribution: DistributionPoint[];
+  totalUsers: number;
+  activeUsers: number;
+  days: number;
+  onDaysChange: (days: number) => void;
+  onRefresh: () => void;
+}) {
+  const newUsers = analytics.reduce((total, point) => total + point.users, 0);
+  const conversations = analytics.reduce((total, point) => total + point.conversations, 0);
+  const messages = analytics.reduce((total, point) => total + point.messages, 0);
+  const rangeLabel = `Last ${days} days`;
+
   return (
     <div className="space-y-6">
-      <div>
-        <p className="eyebrow">PLATFORM ACTIVITY</p>
-        <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">Analytics</h1>
-        <p className="mt-2 text-sm text-mist">Daily account growth, conversations, and user messages over the last 30 days.</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="eyebrow">PLATFORM ACTIVITY</p>
+          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">Analytics</h1>
+          <p className="mt-2 text-sm text-mist">Explore account growth and engagement across your platform.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-xl border border-line bg-bg-card p-1" aria-label="Analytics date range">
+            {[7, 30, 90].map((range) => (
+              <button
+                key={range}
+                type="button"
+                aria-pressed={days === range}
+                onClick={() => onDaysChange(range)}
+                className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${days === range ? "bg-nova-soft text-nova" : "text-mist hover:text-ink"}`}
+              >
+                {range}d
+              </button>
+            ))}
+          </div>
+          <Button type="button" variant="outline" size="icon" aria-label="Refresh analytics" onClick={onRefresh}>
+            <RefreshCw size={16} />
+          </Button>
+        </div>
       </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Total users" value={totalUsers} note="All registered accounts" />
+        <StatCard label="New users" value={newUsers} note={rangeLabel} />
+        <StatCard label="Active users" value={activeUsers} note={`Messaged in the ${days}-day period`} />
+        <StatCard label="User messages" value={messages} note={`${conversations.toLocaleString()} conversations · ${rangeLabel}`} />
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-2">
+        <section className="rounded-2xl border border-line bg-bg-card p-4 sm:p-6">
+          <div className="mb-5">
+            <h2 className="font-display text-lg font-semibold">User growth</h2>
+            <p className="mt-1 text-xs text-mist">New account registrations per day · {rangeLabel}</p>
+          </div>
+          <div className="h-[280px] w-full sm:h-[340px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={analytics} margin={{ top: 12, right: 8, bottom: 4, left: -18 }}>
+                <defs>
+                  <linearGradient id="userGrowthFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.42} />
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="var(--line-strong)" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" tickFormatter={shortDate} minTickGap={24} stroke="var(--mist)" fontSize={11} />
+                <YAxis allowDecimals={false} stroke="var(--mist)" fontSize={11} />
+                <Tooltip content={<ChartTooltip />} />
+                <Area type="monotone" dataKey="users" name="New users" stroke="#8b5cf6" strokeWidth={3} fill="url(#userGrowthFill)" activeDot={{ r: 5, strokeWidth: 0 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-line bg-bg-card p-4 sm:p-6">
+          <div className="mb-5">
+            <h2 className="font-display text-lg font-semibold">Engagement waves</h2>
+            <p className="mt-1 text-xs text-mist">Daily conversations and user messages · {rangeLabel}</p>
+          </div>
+          <div className="h-[280px] w-full sm:h-[340px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={analytics} margin={{ top: 12, right: 8, bottom: 4, left: -18 }}>
+                <defs>
+                  <linearGradient id="conversationFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.02} />
+                  </linearGradient>
+                  <linearGradient id="messageFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22c55e" stopOpacity={0.32} />
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="var(--line-strong)" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" tickFormatter={shortDate} minTickGap={24} stroke="var(--mist)" fontSize={11} />
+                <YAxis allowDecimals={false} stroke="var(--mist)" fontSize={11} />
+                <Tooltip content={<ChartTooltip />} />
+                <Legend />
+                <Area type="monotone" dataKey="conversations" name="Conversations" stroke="#f59e0b" strokeWidth={2.5} fill="url(#conversationFill)" activeDot={{ r: 4 }} />
+                <Area type="monotone" dataKey="messages" name="User messages" stroke="#22c55e" strokeWidth={2.5} fill="url(#messageFill)" activeDot={{ r: 4 }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <DistributionChart title="Account roles" description="Registered users by access role" data={roleDistribution} />
+        <DistributionChart title="Plan distribution" description="Registered users by subscription plan" data={planDistribution} />
+      </div>
+
       <section className="rounded-2xl border border-line bg-bg-card p-4 sm:p-6">
-        <div className="h-[320px] w-full sm:h-[420px]">
+        <div className="mb-4">
+          <h2 className="font-display text-lg font-semibold">Daily activity breakdown</h2>
+          <p className="mt-1 text-xs text-mist">Compare signups and chat activity day by day · {rangeLabel}</p>
+        </div>
+        <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={analytics} margin={{ top: 12, right: 12, bottom: 4, left: -18 }}>
+            <LineChart data={analytics} margin={{ top: 8, right: 12, bottom: 4, left: -18 }}>
               <CartesianGrid stroke="var(--line-strong)" strokeDasharray="3 3" />
               <XAxis dataKey="date" tickFormatter={shortDate} minTickGap={24} stroke="var(--mist)" fontSize={11} />
               <YAxis allowDecimals={false} stroke="var(--mist)" fontSize={11} />
               <Tooltip content={<ChartTooltip />} />
               <Legend />
-              <Line type="monotone" dataKey="users" name="New users" stroke="var(--nova-violet)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="users" name="New users" stroke="#8b5cf6" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="conversations" name="Conversations" stroke="#f59e0b" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="messages" name="User messages" stroke="#35c78a" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="messages" name="User messages" stroke="#22c55e" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       </section>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <StatCard label="New users" value={analytics.reduce((total, point) => total + point.users, 0)} note="Last 30 days" />
-        <StatCard label="Conversations" value={analytics.reduce((total, point) => total + point.conversations, 0)} note="Last 30 days" />
-        <StatCard label="User messages" value={analytics.reduce((total, point) => total + point.messages, 0)} note="Last 30 days" />
-      </div>
     </div>
+  );
+}
+
+function DistributionChart({
+  title,
+  description,
+  data,
+}: {
+  title: string;
+  description: string;
+  data: DistributionPoint[];
+}) {
+  const total = data.reduce((sum, item) => sum + item.users, 0);
+  return (
+    <section className="rounded-2xl border border-line bg-bg-card p-4 sm:p-6">
+      <div className="mb-4">
+        <h2 className="font-display text-lg font-semibold">{title}</h2>
+        <p className="mt-1 text-xs text-mist">{description}</p>
+      </div>
+      {data.length ? (
+        <div className="grid items-center gap-3 sm:grid-cols-[minmax(160px,0.9fr)_1fr]">
+          <div className="h-[210px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={data} dataKey="users" nameKey="name" innerRadius="58%" outerRadius="82%" paddingAngle={3} stroke="none">
+                  {data.map((item, index) => (
+                    <Cell key={item.name} fill={analyticsColors[index % analyticsColors.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<ChartTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="space-y-3">
+            {data.map((item, index) => (
+              <div key={item.name} className="flex items-center justify-between gap-3 text-sm">
+                <span className="flex min-w-0 items-center gap-2 capitalize text-mist">
+                  <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: analyticsColors[index % analyticsColors.length] }} />
+                  <span className="truncate">{item.name}</span>
+                </span>
+                <span className="shrink-0 font-medium text-ink">
+                  {item.users.toLocaleString()} <span className="text-xs text-mist">({total ? Math.round((item.users / total) * 100) : 0}%)</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <p className="py-12 text-center text-sm text-mist">No account data available yet.</p>
+      )}
+    </section>
   );
 }
 

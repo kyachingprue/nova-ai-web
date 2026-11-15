@@ -100,7 +100,7 @@ export default function Navbar() {
             <span className="hidden sm:inline">Nova AI</span>
           </Link>
 
-          <div className="hidden sm:flex items-center gap-1 rounded-full border border-line bg-bg/50 p-1">
+          <div className="hidden lg:flex items-center gap-1 rounded-full border border-line bg-bg/50 p-1">
           {links.map((link) => {
             const isActive = isNavLinkActive(link, pathname);
             return (
@@ -166,7 +166,7 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="hidden sm:inline-flex items-center justify-center gap-2 px-[22px] py-[11px] rounded-[10px] text-[14.5px] font-semibold border border-line-strong hover:border-nova hover:bg-nova-soft transition-all"
+                className="hidden lg:inline-flex items-center justify-center gap-2 px-[22px] py-[11px] rounded-[10px] text-[14.5px] font-semibold border border-line-strong hover:border-nova hover:bg-nova-soft transition-all"
               >
                 Sign in
               </Link>
@@ -184,7 +184,7 @@ export default function Navbar() {
               aria-expanded={menuOpen}
               aria-controls="mobile-navigation"
               onClick={() => setMenuOpen(true)}
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-line-strong sm:hidden"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-line-strong lg:hidden"
             >
               <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
                 <path d="M0 1H16M0 6H16M0 11H16" stroke="currentColor" strokeWidth="1.4" />
