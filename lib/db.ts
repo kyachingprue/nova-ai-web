@@ -24,12 +24,14 @@ export async function ensureSchema() {
         password_hash TEXT,
         image_url TEXT,
         firebase_uid TEXT UNIQUE,
+        role TEXT NOT NULL DEFAULT 'user',
         plan TEXT NOT NULL DEFAULT 'free',
         subscription_status TEXT NOT NULL DEFAULT 'inactive',
         stripe_customer_id TEXT,
         stripe_subscription_id TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )`;
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'user'`;
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free'`;
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status TEXT NOT NULL DEFAULT 'inactive'`;
       await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT`;
@@ -61,6 +63,11 @@ export async function ensureSchema() {
         content TEXT NOT NULL,
         sources JSONB NOT NULL DEFAULT '[]'::jsonb,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`;
+      await sql`CREATE TABLE IF NOT EXISTS app_settings (
+        setting_key TEXT PRIMARY KEY,
+        setting_value JSONB NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       )`;
     })().catch((error: unknown) => {
       schemaReady = undefined;

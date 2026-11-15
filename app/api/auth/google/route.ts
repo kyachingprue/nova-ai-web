@@ -3,6 +3,7 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 import { z } from "zod";
 import { createSession } from "@/lib/auth";
 import { ensureSchema, getDb } from "@/lib/db";
+import { isAdminEmail } from "@/lib/user-role";
 
 const schema = z.object({ idToken: z.string().min(1) });
 const firebaseKeys = createRemoteJWKSet(
@@ -30,11 +31,13 @@ export async function POST(request: Request) {
     const firstName = typeof payload.name === "string" ? payload.name.split(" ")[0] : email.split("@")[0];
     const lastName = typeof payload.name === "string" ? payload.name.split(" ").slice(1).join(" ") : "";
     const imageUrl = typeof payload.picture === "string" ? payload.picture : null;
-    const [user] = await db`INSERT INTO users (first_name, last_name, email, image_url, firebase_uid)
-      VALUES (${firstName}, ${lastName}, ${email}, ${imageUrl}, ${payload.sub})
+    const role = isAdminEmail(email) ? "admin" : "user";
+    const [user] = await db`INSERT INTO users (first_name, last_name, email, image_url, firebase_uid, role)
+      VALUES (${firstName}, ${lastName}, ${email}, ${imageUrl}, ${payload.sub}, ${role})
       ON CONFLICT (email) DO UPDATE SET
         firebase_uid = COALESCE(users.firebase_uid, EXCLUDED.firebase_uid),
-        image_url = COALESCE(users.image_url, EXCLUDED.image_url)
+        image_url = COALESCE(users.image_url, EXCLUDED.image_url),
+        role = CASE WHEN EXCLUDED.role = 'admin' THEN 'admin' ELSE users.role END
       RETURNING id`;
     await createSession(String(user.id));
     return NextResponse.json({ ok: true });

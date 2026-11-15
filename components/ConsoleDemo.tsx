@@ -14,9 +14,9 @@ export default function ConsoleDemo() {
             Good questions deserve clear answers.
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-mist sm:text-base">
-            Ask in your own words. Get a useful response from Gemini, readable
-            formatting for everything from a quick note to code, and web sources
-            when search helps.
+            Ask in your own words. Get a useful AI response, readable formatting
+            for everything from a quick note to code, and sources when optional
+            web search is enabled.
           </p>
           <ul className="mt-6 grid gap-3 text-sm text-ink-soft">
             <li className="flex items-center gap-2.5"><Check size={16} className="text-nova" />Your chat history stays in your workspace</li>
@@ -29,7 +29,7 @@ export default function ConsoleDemo() {
           <div className="conversation-preview">
             <div className="conversation-preview-topbar">
               <span className="preview-brand"><BrandMark size={26} />Nova AI</span>
-              <span className="preview-model"><span /> Gemini</span>
+              <span className="preview-model"><span /> OpenRouter Free</span>
             </div>
             <div className="preview-chat">
               <div className="preview-user-message">

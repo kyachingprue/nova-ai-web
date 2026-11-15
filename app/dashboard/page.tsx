@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import DashboardClient from "@/components/dashboard/DashboardClient";
-import { getSessionUserId } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/user-role";
 
 export default async function DashboardPage() {
-  const userId = await getSessionUserId();
-  if (!userId) redirect("/login");
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  if (user.role === "admin") redirect("/dashboard/overview");
   return <DashboardClient />;
 }

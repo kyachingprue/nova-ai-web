@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSession } from "@/lib/auth";
 import { ensureSchema, getDb } from "@/lib/db";
+import { isAdminEmail } from "@/lib/user-role";
 
 const schema = z.object({ email: z.string().email(), code: z.string().regex(/^\d{6}$/) });
 
@@ -31,8 +32,11 @@ export async function POST(request: Request) {
         WHERE email = ${parsed.data.email.toLowerCase()} AND attempts < 5`;
       return NextResponse.json({ error: "That verification code is incorrect." }, { status: 400 });
     }
-    const [user] = await db`INSERT INTO users (first_name, last_name, email, password_hash, image_url)
-      VALUES (${pending.first_name}, ${pending.last_name}, ${pending.email}, ${pending.password_hash}, ${pending.image_url})
+    const role = isAdminEmail(String(pending.email)) ? "admin" : "user";
+    const [user] = await db`INSERT INTO users
+      (first_name, last_name, email, password_hash, image_url, role)
+      VALUES (${pending.first_name}, ${pending.last_name}, ${pending.email},
+        ${pending.password_hash}, ${pending.image_url}, ${role})
       RETURNING id`;
     await db`DELETE FROM pending_verifications WHERE email = ${parsed.data.email.toLowerCase()}`;
     await createSession(String(user.id));

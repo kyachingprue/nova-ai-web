@@ -8,8 +8,8 @@ const steps = [
   },
   {
     index: "02 — EXPLORE",
-    title: "Gemini works through it",
-    desc: "Nova sends your conversation to Gemini and can use web search when fresh context could make the answer more useful.",
+    title: "Nova works through it",
+    desc: "Nova sends your conversation to an available OpenRouter free model. Optional web search can add fresh context and may incur extra charges.",
   },
   {
     index: "03 — KEEP",

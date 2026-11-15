@@ -10,7 +10,7 @@ type Feature = {
 
 const features: Feature[] = [
   {
-    title: "Gemini for the way you think",
+    title: "AI for the way you think",
     desc: "Explore a question, draft a message, work through a tricky idea, or ask for help with code in one conversational workspace.",
     span: "lg:col-span-3",
     icon: (
@@ -21,7 +21,7 @@ const features: Feature[] = [
   },
   {
     title: "Web-grounded answers",
-    desc: "When current information matters, Nova can search the web and show source links alongside Gemini's answer.",
+    desc: "When optional web search is enabled, Nova can find current information and show source links with its answer. Search may incur extra charges.",
     span: "lg:col-span-3",
     tag: "WITH SOURCES",
     icon: (
@@ -77,8 +77,8 @@ export default function Features() {
             A helpful place to start thinking.
           </h2>
           <p className="text-mist text-base leading-relaxed">
-            Ask in natural language and get a thoughtful Gemini response, with
-            web sources and chat history available right in your workspace.
+            Ask in natural language and get a thoughtful AI response, with chat
+            history and optional web sources available in your workspace.
           </p>
         </Reveal>
 

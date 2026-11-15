@@ -15,7 +15,7 @@ const stages = [
     number: "02",
     icon: SearchCheck,
     title: "Nova finds fresh context",
-    description: "Gemini reasons over your conversation and searches the web for relevant, current information when it helps answer your question.",
+    description: "An OpenRouter free model responds to your conversation. Optional web search can find relevant, current information and may incur extra charges.",
   },
   {
     number: "03",
@@ -33,7 +33,7 @@ export default function HowItWorksPage() {
         <section className="how-page-hero">
           <span className="pricing-pill"><Sparkles size={13} /> A LITTLE MORE CLARITY, EVERY DAY</span>
           <h1 className="mt-6 max-w-4xl font-display text-4xl font-semibold tracking-tight sm:text-6xl">From curious question<br /><span className="text-nova">to clear next step.</span></h1>
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-mist">Nova brings Gemini, web search, and your conversation history together in one calm workspace. Here’s how it works.</p>
+          <p className="mt-5 max-w-xl text-base leading-relaxed text-mist">Nova brings an OpenRouter free model and your conversation history together in one calm workspace, with optional web search. Here’s how it works.</p>
           <a href="#steps" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-nova">See the three steps <ArrowDown size={16} /></a>
         </section>
         <section id="steps" className="how-stage-section">

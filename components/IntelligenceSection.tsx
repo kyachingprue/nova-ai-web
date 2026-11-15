@@ -14,8 +14,8 @@ const capabilities = [
   {
     icon: Globe2,
     title: "Research with receipts",
-    description: "Explore current topics with web-grounded answers and links you can open, check, and keep.",
-    label: "WEB SEARCH",
+    description: "When optional web search is enabled, explore current topics with source links you can open, check, and keep.",
+    label: "OPTIONAL WEB SEARCH",
   },
   {
     icon: PenLine,
@@ -47,7 +47,7 @@ export default function IntelligenceSection() {
             From first draft to<br /><span className="text-nova">the next big idea.</span>
           </h2>
           <p className="mt-4 max-w-xl text-sm leading-relaxed text-mist sm:text-base">
-            Research, write, code, or simply think out loud. Nova brings Gemini and web search into a calm workspace that remembers the conversation.
+            Research, write, code, or simply think out loud with an OpenRouter free model. Optional web search can add source links and may incur extra charges.
           </p>
         </Reveal>
 

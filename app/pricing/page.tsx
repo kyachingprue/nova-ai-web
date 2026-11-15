@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Check, Sparkles } from "lucide-react";
 
 const plans = [
-  { id: "free", name: "Free", price: "$0", cadence: "forever", description: "A thoughtful place to start.", features: ["50 AI messages / month", "Gemini Flash access", "Chat history", "Web search & citations"], action: "Start for free" },
-  { id: "pro", name: "Pro", price: "$19", cadence: "per month", description: "More room for your best thinking.", features: ["Unlimited AI messages", "Advanced Gemini models", "Unlimited chat history", "Web search & citations", "Priority response speed"], action: "Choose Pro", popular: true },
+  { id: "free", name: "Free", price: "$0", cadence: "forever", description: "A thoughtful place to start.", features: ["50 AI messages / month", "OpenRouter free-model access", "Chat history", "Optional web search & citations"], action: "Start for free" },
+  { id: "pro", name: "Pro", price: "$19", cadence: "per month", description: "More room for your best thinking.", features: ["Unlimited AI messages", "Configurable AI models", "Unlimited chat history", "Optional web search & citations", "Priority response speed"], action: "Choose Pro", popular: true },
   { id: "team", name: "Team", price: "$49", cadence: "per seat / month", description: "Bring your team’s ideas together.", features: ["Everything in Pro", "Shared team workspace", "Team knowledge library", "Admin & member controls", "Priority support"], action: "Choose Team" },
 ];
 
@@ -14,7 +14,7 @@ export default function PricingPage() {
         <div className="mx-auto mb-12 max-w-2xl text-center">
           <span className="pricing-pill"><Sparkles size={13} /> SIMPLE, TRANSPARENT PRICING</span>
           <h1 className="mt-5 font-display text-4xl font-semibold tracking-tight sm:text-6xl">Space to think.<br /><span className="text-nova">Plans to grow.</span></h1>
-          <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-mist">Start free, find your flow, and upgrade when you’re ready. Every plan comes with answers grounded in the web.</p>
+          <p className="mx-auto mt-5 max-w-lg text-base leading-relaxed text-mist">Start free, find your flow, and upgrade when you’re ready. Optional web search may incur extra charges from your AI provider.</p>
         </div>
         <div className="grid gap-5 md:grid-cols-3">
           {plans.map((plan) => (

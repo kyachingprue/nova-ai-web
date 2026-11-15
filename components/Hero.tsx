@@ -2,8 +2,8 @@ import Link from "next/link";
 import NovaBurst from "@/components/NovaBurst";
 
 const stats = [
-  { num: "Gemini", label: "AI-powered answers" },
-  { num: "Web", label: "search with sources" },
+  { num: "Free AI", label: "model routing" },
+  { num: "Optional", label: "web search with sources" },
   { num: "Saved", label: "conversation history" },
 ];
 
@@ -21,9 +21,9 @@ export default function Hero() {
         </h1>
 
         <p className="text-[17px] leading-relaxed text-mist max-w-[460px] mb-8 animate-[fadeUp_0.7s_0.16s_ease-out_both]">
-          Ask questions, explore ideas, write, or work through code with Gemini.
-          Nova keeps your conversations together and can ground answers in web
-          sources when current information helps.
+          Ask questions, explore ideas, write, or work through code with Nova's
+          AI assistant. Optional web search can add sources when current
+          information helps.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3.5 mb-[38px] animate-[fadeUp_0.7s_0.24s_ease-out_both]">

@@ -5,15 +5,15 @@ import Footer from "@/components/Footer";
 
 const sections = [
   { id: "getting-started", number: "01", title: "Getting started", icon: Sparkles, text: "Create an account with your email and password, then enter the verification code sent to your inbox. Google sign-in is also available when Firebase is configured.", bullets: ["Choose a plan to get started (billing is not enabled yet).", "Verify your email address to activate your account.", "Open the dashboard to start a conversation."] },
-  { id: "chat", number: "02", title: "Chat with Nova", icon: BookOpen, text: "Send a question from the dashboard. Nova uses Google Gemini to generate a response, with web search grounding enabled to find current information.", bullets: ["Use a new conversation for a separate topic.", "Conversation messages and timestamps are saved to your account.", "If web results are used, source links appear below Nova’s response."] },
+  { id: "chat", number: "02", title: "Chat with Nova", icon: BookOpen, text: "Send a question from the dashboard. Nova uses OpenRouter's free-model router by default. Optional web search can find current information, but may incur extra charges.", bullets: ["Use a new conversation for a separate topic.", "Conversation messages and timestamps are saved to your account.", "If web search is enabled and returns links, source links appear below Nova’s response."] },
   { id: "history", number: "03", title: "Chat history & sources", icon: Search, text: "Your recent conversations are listed in the dashboard sidebar. Select one to reopen its saved messages and citations.", bullets: ["History is private to your signed-in account.", "Saved messages and their sources are persisted in PostgreSQL.", "Conversation titles are generated from your first message."] },
-  { id: "account", number: "04", title: "Profile & appearance", icon: ShieldCheck, text: "Your account menu in the top navigation links to the dashboard and lets you sign out. Choose a color preference from the theme control.", bullets: ["Upload an optional profile photo during registration.", "Choose light, dark, or system theme.", "Sessions use a signed, HTTP-only cookie."] },
+  { id: "account", number: "04", title: "Profile & appearance", icon: ShieldCheck, text: "Your profile route lets you update your name and profile photo. Admin accounts also have overview, user, analytics, report, and settings pages.", bullets: ["Profile images are uploaded to ImgBB.", "Choose light, dark, or system theme.", "Sessions use a signed, HTTP-only cookie."] },
 ];
 
 const envGroups = [
   { icon: Database, title: "Database", variables: ["DATABASE_URL"] },
-  { icon: KeyRound, title: "Authentication & email", variables: ["JWT_SECRET", "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM"] },
-  { icon: Code2, title: "AI & integrations", variables: ["GEMINI_API_KEY", "GEMINI_MODEL (optional)", "NEXT_PUBLIC_FIREBASE_*", "NEXT_PUBLIC_IMGBB_API_KEY (optional)"] },
+  { icon: KeyRound, title: "Authentication & email", variables: ["JWT_SECRET", "ADMIN_EMAILS", "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASSWORD", "SMTP_FROM"] },
+  { icon: Code2, title: "AI & integrations", variables: ["OPENROUTER_API_KEY", "OPENROUTER_MODEL (optional)", "OPENROUTER_WEB_SEARCH (optional)", "IMGBB_API_KEY", "NEXT_PUBLIC_FIREBASE_*", "NEXT_PUBLIC_IMGBB_API_KEY (registration)"] },
 ];
 
 export default function DocsPage() {
@@ -48,7 +48,7 @@ export default function DocsPage() {
               <span className="docs-section-icon"><Database size={19} /></span>
               <p className="eyebrow mt-5">DEPLOYMENT</p>
               <h2 className="mt-2 font-display text-2xl font-semibold">Configuration</h2>
-              <p className="mt-3 text-base leading-relaxed text-mist">Copy <code>.env.example</code> to <code>.env.local</code> and configure the service credentials required for the features you want to enable. Keep server secrets private and never use a <code>NEXT_PUBLIC_</code> prefix for server-only values.</p>
+              <p className="mt-3 text-base leading-relaxed text-mist">Create a project-root <code>.env.local</code> file and configure the service credentials required for the features you want to enable. Keep server secrets private and never use a <code>NEXT_PUBLIC_</code> prefix for server-only values. OpenRouter web search is off by default and may incur extra charges if enabled.</p>
               <div className="env-groups">{envGroups.map(({ icon: Icon, title, variables }) => <article key={title} className="env-group"><h3><Icon size={16} />{title}</h3><ul>{variables.map((variable) => <li key={variable}><code>{variable}</code></li>)}</ul></article>)}</div>
             </section>
             <section id="api" className="docs-section">
@@ -61,9 +61,10 @@ export default function DocsPage() {
                 <div><span className="api-method">POST</span><code>/api/auth/verify</code><span>Verify code and create account</span></div>
                 <div><span className="api-method">POST</span><code>/api/auth/login</code><span>Sign in with email/password</span></div>
                 <div><span className="api-method">GET</span><code>/api/conversations</code><span>List your conversations</span></div>
-                <div><span className="api-method">POST</span><code>/api/chat</code><span>Save a message and get a Gemini response</span></div>
+                <div><span className="api-method">POST</span><code>/api/chat</code><span>Save a message and get an OpenRouter response</span></div>
+                <div><span className="api-method">GET</span><code>/api/admin/*</code><span>Admin-only statistics, reports, and settings</span></div>
               </div>
-              <p className="mt-4 text-base leading-relaxed text-mist">Responses depend on your configured Neon, SMTP, Firebase, ImgBB, and Gemini services. See the project <Link className="text-nova underline underline-offset-2" href="/">home page</Link> or <Link className="text-nova underline underline-offset-2" href="/pricing">pricing</Link>.</p>
+              <p className="mt-4 text-base leading-relaxed text-mist">Responses depend on your configured Neon, SMTP, Firebase, ImgBB, and OpenRouter services. See the project <Link className="text-nova underline underline-offset-2" href="/">home page</Link> or <Link className="text-nova underline underline-offset-2" href="/pricing">pricing</Link>.</p>
             </section>
             <div className="docs-help"><CircleHelp size={20} /><div><strong>Still have a question?</strong><p className="mt-1 text-base leading-relaxed text-mist">Review the project README for setup details and environment variable instructions.</p></div><Link href="/how-it-works" aria-label="How Nova works"><ArrowRight size={17} /></Link></div>
           </div>

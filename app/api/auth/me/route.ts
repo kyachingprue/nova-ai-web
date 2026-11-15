@@ -8,7 +8,8 @@ export async function GET() {
     if (!userId) return NextResponse.json({ user: null }, { status: 401 });
     await ensureSchema();
     const [user] = await getDb()`SELECT id, first_name AS "firstName", last_name AS "lastName",
-      email, image_url AS "imageUrl", plan, subscription_status AS "subscriptionStatus"
+      email, image_url AS "imageUrl", role, plan, subscription_status AS "subscriptionStatus",
+      created_at AS "createdAt"
       FROM users WHERE id = ${userId} LIMIT 1`;
     if (!user) return NextResponse.json({ user: null }, { status: 401 });
     return NextResponse.json({ user });

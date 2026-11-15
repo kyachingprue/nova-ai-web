@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ArrowUp, BookOpenText, Check, ChevronDown, CircleHelp, Clock3, Command, Copy, LoaderCircle,
-  LogOut, Menu, MessageSquare, MoreHorizontal, Plus, Search, Sparkles, Trash2, X,
+  ArrowUp, BarChart3, BookOpenText, Check, ChevronDown, CircleHelp, Clock3, Command, Copy, FileText, LayoutDashboard, LoaderCircle,
+  LogOut, Menu, MessageSquare, MoreHorizontal, Plus, Search, Settings, Sparkles, Trash2, UserRound, Users, X,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import BrandMark from "@/components/BrandMark";
 
-type User = { firstName: string; lastName: string; email: string; imageUrl?: string | null };
+type User = { firstName: string; lastName: string; email: string; imageUrl?: string | null; role?: "user" | "admin" };
 type Conversation = { id: string; title: string; createdAt: string; updatedAt: string };
 type Source = { url: string; title: string };
 type ChatMessage = { id: string; role: "user" | "assistant"; content: string; sources: Source[]; createdAt: string };
@@ -252,8 +252,26 @@ export default function DashboardPage() {
           <button className="mobile-sidebar-close" aria-label="Close sidebar" onClick={() => setSidebarOpen(false)}><X size={18} /></button>
         </div>
         <Button className="w-full justify-start" onClick={() => void startConversation()}><Plus size={17} /> New conversation <span className="ml-auto rounded-md border border-white/20 px-1.5 py-0.5 text-[10px] text-white/80">⌘ K</span></Button>
-        <div className="sidebar-section-label">YOUR WORKSPACE</div>
-        <button className="workspace-item"><span className="workspace-dot" />Personal workspace<ChevronDown size={14} className="ml-auto text-mist" /></button>
+        {user?.role === "admin" ? (
+          <>
+            <div className="sidebar-section-label">ADMIN DASHBOARD</div>
+            <nav className="dashboard-nav">
+              <Link href="/dashboard/overview" className="workspace-item"><LayoutDashboard size={16} />Overview</Link>
+              <Link href="/dashboard/chat" className="workspace-item"><MessageSquare size={16} />Chat</Link>
+              <Link href="/dashboard/users" className="workspace-item"><Users size={16} />All users</Link>
+              <Link href="/dashboard/analytics" className="workspace-item"><BarChart3 size={16} />Analytics</Link>
+              <Link href="/dashboard/profile" className="workspace-item"><UserRound size={16} />Profile</Link>
+              <Link href="/dashboard/reports" className="workspace-item"><FileText size={16} />Reports</Link>
+              <Link href="/dashboard/settings" className="workspace-item"><Settings size={16} />Settings</Link>
+            </nav>
+          </>
+        ) : (
+          <>
+            <div className="sidebar-section-label">YOUR WORKSPACE</div>
+            <button className="workspace-item"><span className="workspace-dot" />Personal workspace<ChevronDown size={14} className="ml-auto text-mist" /></button>
+            <Link href="/dashboard/profile" className="workspace-item"><UserRound size={16} />Profile</Link>
+          </>
+        )}
         <div className="sidebar-section-label mt-7">RECENT CONVERSATIONS</div>
         <div className="conversation-list">
           {loading && <div className="flex items-center gap-2 px-2 py-4 text-xs text-mist"><LoaderCircle size={14} className="animate-spin" />Loading chats…</div>}
@@ -317,10 +335,10 @@ export default function DashboardPage() {
         <header className="dashboard-header">
           <div className="flex items-center gap-3">
             <button aria-label="Open navigation" className="dashboard-icon-button lg:hidden" onClick={() => setSidebarOpen(true)}><Menu size={19} /></button>
-            <span className="hidden items-center gap-2 text-sm text-mist sm:flex"><Command size={15} /> Personal workspace <span>/</span> <strong className="font-medium text-ink">Chat</strong></span>
+            <span className="hidden items-center gap-2 text-sm text-mist sm:flex"><Command size={15} /> {user?.role === "admin" ? "Admin workspace" : "Personal workspace"} <span>/</span> <strong className="font-medium text-ink">Chat</strong></span>
             <span className="font-display font-semibold sm:hidden">Nova AI</span>
           </div>
-          <div className="flex items-center gap-3"><span className="hidden text-xs text-mist md:block">Gemini 2.5 Flash</span><ThemeToggle />{user?.imageUrl ? <img src={user.imageUrl} alt="Your profile" className="h-9 w-9 rounded-full border border-line object-cover" /> : <span className="avatar-fallback">{initials}</span>}</div>
+          <div className="flex items-center gap-3"><span className="hidden text-xs text-mist md:block">OpenRouter Free</span><ThemeToggle />{user?.imageUrl ? <img src={user.imageUrl} alt="Your profile" className="h-9 w-9 rounded-full border border-line object-cover" /> : <span className="avatar-fallback">{initials}</span>}</div>
         </header>
         <div className="chat-scroll-area">
           {messages.length === 0 ? (
@@ -350,9 +368,9 @@ export default function DashboardPage() {
                     </button>
                   </div>
                 </div>
-                {message.role === "user" && <span className="avatar-fallback message-avatar-user">{initials}</span>}
+                {message.role === "user" && <img className="message-avatar-user" src={user?.imageUrl || "/default-avatar.svg"} alt="" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "/default-avatar.svg"; }} />}
               </article>)}
-              {sending && <div className="chat-message"><span className="message-avatar"><Sparkles size={15} /></span><div className="mt-2 flex items-center gap-2 text-sm text-mist"><span className="typing-indicator"><i /><i /><i /></span>Thinking and searching the web…</div></div>}
+              {sending && <div className="chat-message"><span className="message-avatar"><Sparkles size={15} /></span><div className="mt-2 flex items-center gap-2 text-sm text-mist"><span className="typing-indicator"><i /><i /><i /></span>Nova is thinking…</div></div>}
               <div ref={bottomRef} />
             </div>
           )}
@@ -362,7 +380,7 @@ export default function DashboardPage() {
             <Input aria-label="Message Nova" className="h-12 border-0 bg-transparent px-3 shadow-none focus-visible:ring-0" placeholder="Ask Nova anything…" value={draft} onChange={(event) => setDraft(event.target.value)} />
             <button className="send-button" type="submit" disabled={!draft.trim() || sending} aria-label="Send message">{sending ? <LoaderCircle size={17} className="animate-spin" /> : <ArrowUp size={18} />}</button>
           </form>
-          <p className="mt-2 text-center text-[11px] text-mist">Nova can make mistakes. Verify important information with the linked sources.</p>
+          <p className="mt-2 text-center text-[11px] text-mist">Nova can make mistakes. Verify important information.</p>
         </div>
       </section>
     </main>

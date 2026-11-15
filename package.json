@@ -29,6 +29,7 @@
     "react-hook-form": "^7.91.0",
     "react-hot-toast": "^2.6.1",
     "react-markdown": "^10.1.0",
+    "recharts": "^3.10.1",
     "rehype-highlight": "^7.0.2",
     "remark-gfm": "^4.0.1",
     "stripe": "^23.0.1",
