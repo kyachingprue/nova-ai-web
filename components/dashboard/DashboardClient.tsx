@@ -65,10 +65,11 @@ export default function DashboardPage() {
     async function initialize() {
       try {
         const meResponse = await fetch("/api/auth/me");
-        if (!meResponse.ok) {
+        if (meResponse.status === 401) {
           router.replace("/login");
           return;
         }
+        if (!meResponse.ok) throw new Error("Unable to verify your session.");
         const { user: account } = await meResponse.json();
         if (!active) return;
         setUser(account);
