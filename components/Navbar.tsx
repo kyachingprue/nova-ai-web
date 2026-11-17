@@ -27,6 +27,7 @@ function isNavLinkActive(link: NavLink, pathname: string) {
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -36,15 +37,24 @@ export default function Navbar() {
     let active = true;
     fetch("/api/auth/me")
       .then(async (response) => {
-        if (!response.ok) return null;
+        if (response.status === 401) return null;
+        if (!response.ok) throw new Error("Unable to load account details.");
         const result = await response.json();
         return result.user as User | null;
       })
       .then((account) => {
         if (active) setUser(account);
       })
-      .catch(() => {
-        if (active) setUser(null);
+      .catch((error: unknown) => {
+        if (active) {
+          setUser(null);
+          toast.error(
+            error instanceof Error ? error.message : "Unable to load account details."
+          );
+        }
+      })
+      .finally(() => {
+        if (active) setAuthChecked(true);
       });
     return () => { active = false; };
   }, []);
@@ -162,7 +172,7 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-          ) : (
+          ) : authChecked ? (
             <>
               <Link
                 href="/login"
@@ -171,13 +181,13 @@ export default function Navbar() {
                 Sign in
               </Link>
               <Link
-                href="/register"
+                href="/login"
                 className="navbar-cta inline-flex min-h-10 items-center justify-center gap-2 rounded-[10px] px-3.5 py-2 text-xs font-semibold sm:min-h-11 sm:px-4 sm:py-2.5 sm:text-sm md:px-5 lg:px-[22px] lg:py-[11px] lg:text-[14.5px]"
               >
                 Get started
               </Link>
             </>
-          )}
+          ) : null}
             <button
               type="button"
               aria-label="Open menu"
@@ -261,15 +271,19 @@ export default function Navbar() {
             </div>
             {user ? (
               <div className="mt-7 flex flex-col gap-2 border-t border-line pt-5">
+                <div className="px-4 pb-2">
+                  <p className="text-sm font-semibold text-ink">{user.firstName} {user.lastName}</p>
+                  <p className="mt-0.5 truncate text-xs text-mist">{user.email}</p>
+                </div>
                 <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-base text-ink-soft hover:bg-nova-soft/60"><LayoutDashboard size={18} /> Dashboard</Link>
                 <button type="button" onClick={() => { setMenuOpen(false); void logout(); }} className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-left text-base text-ink-soft hover:bg-nova-soft/60"><LogOut size={18} /> Sign out</button>
               </div>
-            ) : (
+            ) : authChecked ? (
               <div className="mt-7 flex flex-col gap-3 border-t border-line pt-5">
                 <Link href="/login" onClick={() => setMenuOpen(false)} className="flex min-h-12 items-center justify-center rounded-xl border border-line-strong text-base font-semibold text-ink-soft transition hover:border-nova hover:bg-nova-soft">Sign in</Link>
-                <Link href="/register" onClick={() => setMenuOpen(false)} className="navbar-cta flex min-h-12 items-center justify-center rounded-xl px-5 text-base font-semibold">Get started</Link>
+                <Link href="/login" onClick={() => setMenuOpen(false)} className="navbar-cta flex min-h-12 items-center justify-center rounded-xl px-5 text-base font-semibold">Get started</Link>
               </div>
-            )}
+            ) : null}
           </nav>
         </aside>
       </div>
